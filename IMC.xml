@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+ Copyright (C) 2007-2023 Laboratório de Sistemas e Tecnologia Subaquática   +
++ Copyright (C) 2007-2020 Laboratório de Sistemas e Tecnologia Subaquática   +
 + Departamento de Engenharia Electrotécnica e de Computadores                +
 + Rua Dr. Roberto Frias, 4200-465 Porto, Portugal                            +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -203,6 +203,7 @@
     <unit abbrev="S/m" name="Siemens per meter"/>
     <unit abbrev="kg" name="Kilogram"/>
     <unit abbrev="Nm" name="Newton meter"/>
+    <unit abbrev="kn" name="Knot"/>
     <unit abbrev="NTU" name="Nephelometric Turbidity Unit"/>
     <unit abbrev="N" name="Newton"/>
     <unit abbrev="Pa" name="Pascal"/>
@@ -214,6 +215,8 @@
     <unit abbrev="px" name="Pixel"/>
     <unit abbrev="µg/L" name="Microgram per liter"/>
     <unit abbrev="µM" name="Micromolar"/>
+    <unit abbrev="µmol" name="Micromole"/>
+    <unit abbrev="par" name="PAR"/>
     <unit abbrev="rad" name="Radian"/>
     <unit abbrev="rad/s" name="Radian per second"/>
     <unit abbrev="rpm" name="Revolutions per minute"/>
@@ -223,6 +226,7 @@
     <unit abbrev="Enumerated" name="Enumeration of integer values"/>
     <unit abbrev="List" name="Comma separated list of values"/>
     <unit abbrev="Bitfield" name="Bit field"/>
+    <unit abbrev="W" name="Watts"/>
     <unit abbrev="TupleList" name="List of key/value tuples">
       <description>
         This unit is a list of label/value tuples and is only valid in
@@ -315,6 +319,7 @@
       <value id="0x10" name="Maximum Speed" abbrev="MAX_SPEED"/>
       <value id="0x20" name="Maximum Vertical Rate" abbrev="MAX_VRATE"/>
       <value id="0x40" name="Operation Area" abbrev="AREA"/>
+      <value id="0x80" name="Polygon Operation Area" abbrev="POLYGON"/>
     </def>
   </bitfields>
 
@@ -2882,6 +2887,11 @@
     <description>
       Report of temperature.
     </description>
+    <field name="Device Time" abbrev="time" type="fp64_t" unit="s">
+      <description>
+        The device time.
+      </description>
+    </field>
     <field name="Measured Temperature" abbrev="value" type="fp32_t" unit="°C">
       <description>
         The value of the temperature as measured by the sensor.
@@ -3752,62 +3762,6 @@
       returning the tuplelist with the pairs: Action,Type
       (operation=REPORT). The type of action can be Axis, Hat or
       Button.
-
-      Verbs to use:
-
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Verb          | Type         | LAUV Use | Verb alternatives                          |  Notes                                |
-      +===============+==============+==========+============================================+=======================================+
-      | Accelerate    | Button       | yes      |                                            |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Arm           | Button       |          |                                            | Should use ArmState message for state |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Decelerate    | Button       | yes      |                                            |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Disarm        | Button       |          |                                            |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Exit          | Button       | yes      |                                            |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Heading       | Axis         | yes      | Yaw, Rotate, Turning                       |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Lateral       | Axis         |          | Sway, Sideways                             |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Pitch         | Axis         |          |                                            |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Roll          | Axis         |          | Bank                                       |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Stop          | Button       | yes      |                                            |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Thrust        | Axis         | yes      | Surge, Forward, Throtle                    |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | Vertical      | Axis         |          | Heave, Up, Ascende, VerticalRate, Depth, Z |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-      | *             | (type)       |          |                                            |                                       |
-      +---------------+--------------+----------+--------------------------------------------+---------------------------------------+
-
-
-      Special actions for configuration:
-
-      +---------------+-------------------+----------------------------------------------------+
-      | Verb          | Special Type      | Notes                                              |
-      +===============+===================+====================================================+
-      | Ranges        | Decimal, Range127 | Decimal [-1.0; 1.0], Range127[-127; 127] (default) |
-      +---------------+-------------------+----------------------------------------------------+
-
-      Types:
-
-      +-------------------+------------------------------------------------------+
-      | Type              | Note                                                 |
-      +===================+======================================================+
-      | Axis              | Axis like (full range)                               |
-      +-------------------+------------------------------------------------------+
-      | Button            | A button (0 for release, 1 for press)                |
-      +-------------------+------------------------------------------------------+
-      | Slider            | Slider like (full range)                             |
-      +-------------------+------------------------------------------------------+
-      | HalfSlider        | Slider like, but only the positive half of the range |
-      +-------------------+------------------------------------------------------+
-
     </description>
     <field name="operation" abbrev="op" type="uint8_t" unit="Enumerated" prefix="OP">
       <description>
@@ -3818,7 +3772,7 @@
     </field>
     <field name="Actions" abbrev="actions" type="plaintext" unit="TupleList">
       <description>
-        Example: "Propulsion=Axis,Lights=Button"
+        Example: "Propulsion=Axis,PanTilt=Hat,Lights=Button"
       </description>
     </field>
   </message>
@@ -4697,6 +4651,11 @@
         north, in radians.
       </description>
     </field>
+    <field name="Offset" abbrev="off" type="fp32_t" unit="°">
+      <description>
+        Course offset computed by sb_mpc.
+      </description>
+    </field>
   </message>
 
   <message id="401" name="Desired Z" abbrev="DesiredZ"  source="vehicle" category="Guidance">
@@ -5394,6 +5353,17 @@
     <field name="Value" abbrev="value" type="fp64_t" unit="%">
       <description>
         The value of the desired throttle.
+      </description>
+    </field>
+  </message>
+
+  <message id="420" name="Peeked DesiredPath" abbrev="PeekDesiredPath" source="vehicle">
+    <description>
+     A peek into the upcoming DesiredPath, to allow better decisions when completing maneuvers
+    </description>
+    <field name="DesiredPath" abbrev="dpath" type="message" message-type="DesiredPath">
+      <description>
+        The upcoming DesiredPath.
       </description>
     </field>
   </message>
@@ -7892,6 +7862,17 @@
     </description>
   </message>
 
+  <message id="498" name="Peeked Maneuver" abbrev="PeekManeuver" source="vehicle,ccu">
+    <description>
+     A peek into the upcoming maneuver, to allow better decisions when completing maneuvers
+    </description>
+    <field name="Maneuver" abbrev="man" type="message" message-type="PlanManeuver">
+      <description>
+        The upcoming maneuver.
+      </description>
+    </field>
+  </message>
+
   <message id="499" name="Magnetometer Maneuver" abbrev="Magnetometer" source="ccu" category="Maneuvering">
     <description>
       Magnetometer calibration maneuver (i.e: one square pattern
@@ -8167,6 +8148,11 @@
     <field name="Area -- Orientation" abbrev="orientation" type="fp32_t" unit="rad"/>
     <field name="Area -- Width" abbrev="width" type="fp32_t" unit="m"/>
     <field name="Area -- Length" abbrev="length" type="fp32_t" unit="m"/>
+    <field name="Polygon vertices" abbrev="vertices" type="message-list" message-type="PolygonVertex">
+      <description>
+        List of locations defining the polygon of an operational area.
+      </description>
+    </field> 
   </message>
 
   <message id="505" name="Get Operational Limits" abbrev="GetOperationalLimits" source="ccu" category="Vehicle Supervision">
@@ -9615,6 +9601,49 @@
     <field name="Altitude" abbrev="alt" type="fp32_t" unit="m"/>
     <field name="Heading" abbrev="heading" type="fp32_t" unit="rad"/>
     <field name="Custom Data" abbrev="data" type="plaintext" unit="TupleList"/>
+  </message>
+
+  <message id="607" name="AIS Info" abbrev="AisInfo" source="vehicle">
+    <description>
+      Message containing static or dynamic AIS data received onboard the vehicle.
+    </description>
+    <field name="Message Type" abbrev="msg_type" type="plaintext">
+      <description>
+        Integer indicating the message type: 1,2,3,5, ...
+      </description>
+    </field>
+    <field name="Class" abbrev="sensor_class" type="plaintext">
+      <description>
+        The class of a sensor tells the type of sensor originating this message. It will determine how the sensor is to be shown and (optionally) how the custom data (tuplelist) is to be interpreted.
+      </description>
+    </field>
+    <field name="MMSI" abbrev="mmsi" type="plaintext">
+      <description>
+        An unique string that identifies the sensor/vessel.
+      </description>
+    </field>
+    <field name="Callsign" abbrev="callsign" type="plaintext"/>
+    <field name="Name" abbrev="name" type="plaintext"/>
+    <field name="Navigation Status" abbrev="nav_status" type="uint8_t"/>
+    <field name="Type and Cargo" abbrev="type_and_cargo" type="uint8_t"/>
+    <field name="Latitude" abbrev="lat" type="fp64_t" unit="rad"/>
+    <field name="Longitude" abbrev="lon" type="fp64_t" unit="rad"/>
+    <field name="Course" abbrev="course" type="fp32_t" unit="deg"/>
+    <field name="Speed" abbrev="speed" type="fp32_t" unit="kn"/>
+    <field name="Distance" abbrev="dist" type="fp32_t" unit="m">
+      <description>
+        Distance to own vehicle.
+      </description>
+    </field>
+    <field name="Size A Length" abbrev="a" type="fp32_t" unit="m">
+      <description>
+        Size of the vehicle (length = A + B, width = C + D)
+      </description>
+    </field>
+    <field name="Size B Length" abbrev="b" type="fp32_t" unit="m"/>
+    <field name="Size C Width" abbrev="c" type="fp32_t" unit="m"/>
+    <field name="Size D Width" abbrev="d" type="fp32_t" unit="m"/>
+    <field name="Draught" abbrev="draught" type="fp32_t" unit="m"/>
   </message>
 
   <!-- messages used to send maps to the Android Command and Control Unit (ACCU) -->
@@ -11101,75 +11130,6 @@
       </description>
     </field>
    </message>
-  
-  <message id="1014" name="Current Profile" abbrev="CurrentProfile" source="vehicle" flags="periodic" category="Sensors">
-    <description>
-      Contains a profile of water velocities measured relative to the vehicle
-      velocity, represented in the specified coordinate system.
-    </description>
-    <field name="Number of Beams" abbrev="nbeams" type="uint8_t">
-      <description>
-        Number of ADCP beams.
-      </description>
-    </field>
-    <field name="Number of Cells" abbrev="ncells" type="uint8_t">
-      <description>
-        Number of ADCP cells.
-      </description>
-    </field>
-    <field name="Coordinate System" abbrev="coord_sys" type="uint8_t" unit="Bitfield" prefix="UTF">
-      <description>
-        Coordinate system of the velocity measurement.
-      </description>
-      <value abbrev="XYZ" name="xyz" id="0x01"/>
-      <value abbrev="NED" name="ned" id="0x02"/>
-      <value abbrev="BEAMS" name="beams" id="0x04"/>
-    </field>
-    <field name="Profile" abbrev="profile" type="message-list" message-type="CurrentProfileCell">
-      <description>
-        List of current profile measurement cells.
-      </description>
-    </field>
-  </message>
-
-  <message id="1015" name="Current Profile Cell" abbrev="CurrentProfileCell" source="vehicle" flags="periodic" category="Sensors">
-    <description>
-      One Current measurement at a specific CellPosition.
-    </description>
-    <field name="Cell Position" abbrev="cell_position" type="fp32_t" unit="m">
-      <description>
-        Distance of each measurment cell along the Z-axis in the coordintate frame.
-      </description>
-    </field>
-    <field name="Beams Measurements" abbrev="beams" type="message-list" message-type="ADCPBeam">
-      <description>
-        List of beams measurements at the current cell level.
-      </description>
-    </field>
-  </message>
-
-  <message id="1016" name="ADCP Beam Measurements" abbrev="ADCPBeam" source="vehicle" flags="periodic" category="Sensors">
-    <description>
-      Measurement from one specific beam at the given CellPosition.
-      Water Velocity is provided in the chosen Coordinate system.
-      Amplitude and Correlation are always in the BEAM coordinate system.
-    </description>
-    <field name="Water Velocity" abbrev="vel" type="fp32_t" unit="m/s">
-      <description>
-        Water velocity measured in the chosen coordinate system.
-      </description>
-    </field>
-    <field name="Amplitude" abbrev="amp" type="fp32_t" unit="dB">
-      <description>
-        Amplitude of returning ping for the beam.
-      </description>
-    </field>
-    <field name="Correlation" abbrev="cor" type="uint8_t" unit="%" max="100" min="0">
-      <description>
-        Autocorrelation of returning ping for the beam.
-      </description>
-    </field>
-  </message>
 
   <message id="2000" name="GPIO State" abbrev="GpioState" source="vehicle" category="Actuation">
     <description>
@@ -11237,9 +11197,442 @@
       </description>
     </field>
   </message>
+
+  <message id="2005" name="Wave Profile" abbrev="WaveProfile" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Wave profile: amplitude, direction, frequency.
+    </description>
+    <field name="Amplitude" abbrev="ampl" type="fp32_t" unit="m">
+      <description>
+        Wave amplitude.
+      </description>
+    </field>
+    <field name="Direction" abbrev="dir" type="fp32_t" unit="°">
+      <description>
+        Wave direction in NED.
+      </description>
+    </field>
+    <field name="Frequency" abbrev="freq" type="fp32_t" unit="rad/s" min="-3.141592653589793" max="3.141592653589793">
+      <description>
+        Wave frequency in radians.
+      </description>
+    </field>
+  </message>
+
   <message id="2006" name="Total Magnetic Field Intensity" abbrev="TotalMagIntensity" source="vehicle" category="Sensors">
     <field name="Value" abbrev="value" type="fp64_t">
       <description>Total Magnetic Field Intensity (TMI)</description>
+    </field>
+  </message>
+
+  <message id="910" name="Power" abbrev="Power" source="vehicle" flags="periodic" category="Sensors">
+    <field name="Value" abbrev="value" type="fp64_t" unit="W">
+      <description>
+        Produced or Consumed Power.
+      </description>
+    </field>
+  </message>
+
+  <message id="911" name="Estimated Wave Frequency" abbrev="EstimatedFreq" source="vehicle" flags="periodic" category="Navigation">
+    <field name="Value" abbrev="value" type="fp64_t" unit="rad/s">
+      <description>
+        Wave Frequency Estimated from Heave Acceleration (IMU).
+      </description>
+    </field>
+  </message>
+
+    <message id="912" name="Relay State" abbrev="RelayState" source="vehicle,ccu" flags="periodic" category="Sensors">
+    <field name="ID" abbrev="id" type="int8_t">
+      <description>
+        Relay ID: relay1, relay2, etc.
+      </description>
+    </field>
+    <field name="State" abbrev="state" type="int8_t">
+      <description>
+        State: 0=ON, 1=OFF, 2=REBOOT.
+      </description>
+    </field>
+  </message>
+  
+  <message id="914" name="Relative Wind" abbrev="RelativeWind" source="vehicle" category="Sensors">
+    <description>
+      Measurement of relative wind speed and angle.
+    </description>
+    <field name="Angle" abbrev="angle" type="fp32_t" unit="°">
+      <description>
+        Angle of the measured wind speed, 0 to 360 degrees wrt the vessel’s line from stern to bow.
+      </description>
+    </field>
+    <field name="Speed" abbrev="speed" type="fp32_t" unit="m/s">
+      <description>
+        The value of the wind speed as measured by the sensor.
+      </description>
+    </field>
+  </message>
+
+  <message id="919" name="Absolute Wind" abbrev="AbsoluteWind" source="vehicle" category="Sensors">
+    <description>
+      Wind direction wrt North and wind speed.
+    </description>
+    <field name="Direction" abbrev="dir" type="fp32_t" unit="°">
+      <description>
+        Direction of the absolute wind.
+      </description>
+    </field>
+    <field name="Speed" abbrev="speed" type="fp32_t" unit="m/s">
+      <description>
+        Absolute wind speed.
+      </description>
+    </field>
+  </message>
+
+  <message id="915" name="Current Velocity" abbrev="CurrentVelocity" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Current velocity at a given distance below the vehicle.
+    </description>
+    <field name="X" abbrev="x" type="fp32_t" unit="m/s">
+      <description>
+        X velocity component
+      </description>
+    </field>
+    <field name="Y" abbrev="y" type="fp32_t" unit="m/s">
+    <description>
+      Y velocity component
+    </description>
+    </field>
+    <field name="Z1" abbrev="z1" type="fp32_t" unit="m/s">
+      <description>
+        Z1 velocity component
+      </description>
+    </field>
+    <field name="Z2" abbrev="z2" type="fp32_t" unit="m/s">
+    <description>
+      Z2 velocity component
+    </description>
+    </field>
+  </message>
+
+  <message id="916" name="Collision Avoidance" abbrev="CollisionAvoidance" source="vehicle" flags="periodic" category="Navigation">
+    <description>
+      Envelope with CAS information.
+    </description>
+    <field name="MMSI" abbrev="mmsi" type="plaintext">
+      <description>
+        Obstacle ID.
+      </description>
+    </field>
+    <field name="Latitude (WGS-84)" abbrev="lat" type="fp64_t" unit="rad" min="-1.5707963267948966" max="1.5707963267948966">
+      <description>
+        Obstacle WGS-84 Latitude.
+      </description>
+    </field>
+    <field name="Longitude (WGS-84)" abbrev="lon" type="fp64_t" unit="rad" min="-3.141592653589793" max="3.141592653589793">
+      <description>
+        Obstacle WGS-84 Longitude.
+      </description>
+    </field>
+    <field name="Offset north" abbrev="x" type="fp32_t" unit="m">
+      <description>
+        The North offset of the North/East/Down field with respect to
+        own vessel.
+      </description>
+    </field>
+    <field name="Offset east" abbrev="y" type="fp32_t" unit="m">
+      <description>
+        The East offset of the North/East/Down field with respect to
+        own vessel.
+      </description>
+    </field>
+    <field name="Speed" abbrev="speed" type="fp32_t" unit="m/s">
+      <description>
+        Obstacle SOG in m/s.
+      </description>
+    </field>
+    <field name="Course" abbrev="course" type="fp32_t" unit="°">
+      <description>
+        Obstacle COG in degrees.
+      </description>
+    </field>
+    <field name="Distance" abbrev="dist" type="fp32_t" unit="m">
+      <description>
+        Distance between obstacle and own vessel.
+      </description>
+    </field>
+    <field name="Length" abbrev="length" type="fp32_t" unit="m">
+      <description>
+        Obstacle length.
+      </description>
+    </field>
+    <field name="Width" abbrev="width" type="fp32_t" unit="m">
+      <description>
+        Obstacle width.
+      </description>
+    </field>
+    <field name="Obstacle vector size" abbrev="o_vect" type="fp32_t">
+      <description>
+        Size of obstacles vector.
+      </description>
+    </field>
+  </message>
+
+  <message id="917" name="ENC Awareness" abbrev="ENCAwareness" source="vehicle" category="Autonomy">
+    <description>
+      Contains information as extracted from a digital S-57 chart.
+      This can be: location of static objects (buoys, beacons, etc), location and depth of depth contours,
+      location and depth of any other location contained in the chart.
+      For reference see Supervisors/Grounding.
+    </description>
+    <field name="Depth at location" abbrev="depth_at_loc" type="plaintext">
+      <description>
+        Example: "lat=63.46869;lon=10.37790;d=-10"
+      </description>
+    </field>
+    <field name="Danger" abbrev="danger" type="plaintext">
+      <description>
+        Example: "lat=63.46869;lon=10.37790"
+      </description>
+    </field>
+  </message>
+
+  <message id="918" name="Heave Displacement" abbrev="Heave" source="vehicle" category="Sensors">
+    <description>
+      Contains heave measurement computed by GNSS system.
+    </description>
+    <field name="Heave" abbrev="value" type="fp32_t" unit="m">
+      <description>
+        Example: 2m.
+      </description>
+    </field>
+  </message>
+
+  <message id="1011" name="Acoustic Backscatter" abbrev="AcousticBackscatter" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Amplitude of the acoustic backscatter for each beam. 
+    </description>
+    <field name="Beam 1" abbrev="beam1" type="fp32_t" unit="dB">
+      <description>
+        Amplitude of returning ping for beam 1
+    </description>
+    </field>
+    <field name="Beam 2" abbrev="beam2" type="fp32_t" unit="dB">
+      <description>
+        Amplitude of returning ping for beam 2
+      </description>
+    </field>
+    <field name="Beam 3" abbrev="beam3" type="fp32_t" unit="dB">
+      <description>
+        Amplitude of returning ping for beam 3
+      </description>
+    </field>
+    <field name="Beam 4" abbrev="beam4" type="fp32_t" unit="dB">
+      <description>
+        Amplitude of returning ping for beam 4
+      </description>
+    </field>
+  </message>
+
+  <message id="1012" name="Correlation" abbrev="Correlation" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Correlation of a given beam mesurment relative to the other beam measurement
+    </description>
+    <field name="Beam 1" abbrev="beam1" type="uint8_t" unit="%" max="100" min="0">
+      <description>
+        Correlation of a given beam mesurment relative to the other beam measurements. 
+      </description>
+    </field>
+    <field name="Beam 2" abbrev="beam2" type="uint8_t" unit="%" max="100" min="0">
+      <description>
+        Correlation of a given beam mesurment relative to the other beam measurements. 
+      </description>
+    </field>
+    <field name="Beam 3" abbrev="beam3" type="uint8_t" unit="%" max="100" min="0">
+      <description>
+        Correlation of a given beam mesurment relative to the other beam measurements. 
+      </description>
+    </field>
+    <field name="Beam 4" abbrev="beam4" type="uint8_t" unit="%" max="100" min="0">
+      <description>
+        Correlation of a given beam mesurment relative to the other beam measurements. 
+      </description>
+   </field>
+  </message>
+
+  <message id="1014" name="Current Profile Cell" abbrev="CurrentProfileCell" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Raw Current measurement at CellPosition along the Z-axis in the ADCP sensor frame.
+    </description>
+    <field name="Cell Position" abbrev="pos" type="fp32_t" unit="m">
+      <description>
+        Distance of each measurment cell along the Z-axis in the sensor frame.
+      </description>
+    </field>
+    <field name="Beams Measurements" abbrev="beams" type="message-list" message-type="ADCPBeam">
+      <description>
+        List of beams measurements at the current cell level.
+      </description>
+    </field>
+  </message>
+
+    
+  <message id="1015" name="Current Profile" abbrev="CurrentProfile" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Raw Current Profile along the Z-axis of the sensor frame. Contains velocity of water
+      relative to the vehicle velocity represented in the sensor coordinate frame.
+    </description>
+    <field name="Number of Beams" abbrev="beams" type="uint8_t">
+      <description>
+        Number of ADCP beams.
+      </description>
+    </field>
+    <field name="Number of Cells" abbrev="cells" type="uint8_t">
+      <description>
+        Number of ADCP cells.
+      </description>
+    </field>
+    <field name="Coordinate System" abbrev="coord_sys" type="uint8_t" unit="Bitfield" prefix="UTF">
+      <description>
+        Coordinate system of the velocity measurement: XYZ, BEAMS.
+      </description>
+      <value abbrev="XYZ" name="xyz" id="0x01"/>
+      <value abbrev="BEAMS" name="beams" id="0x02"/>
+    </field>
+    <field name="Profile" abbrev="prof" type="message-list" message-type="CurrentProfileCell">
+      <description>
+        List of current profile measurement cells.
+      </description>
+    </field>
+  </message>
+
+  <message id="1016" name="ADCP Beam Measurements" abbrev="ADCPBeam" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Water Velocity is provided in the chosen coordinate system.
+      Amplitude and Correlation are always in the beam coordinate system.
+    </description>
+    <field name="Water Velocity" abbrev="vel" type="fp32_t" unit="m/s">
+      <description>
+        Water velocity measured in the chosen coordinate system.
+      </description>
+    </field>
+    <field name="Amplitude" abbrev="amp" type="fp32_t" unit="dB">
+      <description>
+        Amplitude of returning ping for beam 0.
+      </description>
+    </field>
+    <field name="Correlation" abbrev="cor" type="uint8_t" unit="%" max="100" min="0">
+      <description>
+        Autocorrelation of measured signal.
+      </description>
+    </field>
+  </message>
+
+  <message id="2007" name="TBR Fish Tag" abbrev="TBRFishTag" source="vehicle,ccu" category="Sensors">
+    <description>
+      TBR700RT received fish tag detection
+    </description>
+    <field name="TBR serial number" abbrev="serial_no" type="uint32_t">
+      <description>
+        Serial number of the TBR receiver
+      </description>
+    </field>
+    <field name="UNIX Timestamp" abbrev="unix_timestamp" type="uint32_t">
+      <description>
+        Time of tag detection as UNIX timestamp 
+      </description>
+    </field>
+    <field name="Millisecond" abbrev="millis" type="uint16_t" unit="ms">
+      <description>
+        Milliseconds
+      </description>
+    </field>
+    <field name="Transmit Protocol" abbrev="trans_protocol" type="uint8_t" unit="Enumerated" prefix="TBR">
+      <description>
+        Transmit Protocol of received transponder
+      </description>
+      <value id="1" name="R256" abbrev="R256"/>
+      <value id="2" name="R04K" abbrev="R04K"/>
+      <value id="4" name="R64K" abbrev="R64K"/>
+      <value id="5" name="R01M" abbrev="R01M"/>
+      <value id="6" name="S256" abbrev="S256"/>
+      <value id="3" name="S64K" abbrev="S64K"/>
+      <value id="7" name="HS256" abbrev="HS256"/>
+      <value id="8" name="DS256" abbrev="DS256"/>
+    </field>
+    <field name="Transmitter ID" abbrev="trans_id" type="uint32_t">
+      <description>
+        Transmitter ID
+      </description>
+    </field>
+    <field name="Transmitter Data" abbrev="trans_data" type="uint16_t">
+      <description>
+        Transmitter Data
+      </description>
+    </field>
+    <field name="Signal to Noise Ratio" abbrev="SNR" type="uint8_t" unit="dB">
+      <description>
+        Signal to Noise Ratio
+      </description>
+    </field>
+    <field name="Transmitter Detection Frequency" abbrev="trans_freq" type="uint8_t">
+      <description>
+        Transmitter Detection Frequency
+      </description>
+    </field>
+    <field name="Receiver Memory Address" abbrev="recv_mem_addr" type="uint16_t">
+      <description>
+        Receiver Memory Address (running entry number in flash memory)
+      </description>
+    </field>
+    <field name="Latitude (WGS-84)" abbrev="lat" type="fp64_t" unit="rad" min="-3.141592653589793" max="3.141592653589793">
+     <description>
+        WGS-84 Latitude, stored from GPSfix.
+     </description>
+    </field>
+    <field name="Longitude (WGS-84)" abbrev="lon" type="fp64_t" unit="rad" min="-3.141592653589793" max="3.141592653589793">
+     <description>
+       WGS-84 Longitude, stored from GPSfix.
+     </description>
+    </field>
+  </message>
+
+  <message id="2008" name="TBR Sensor Reading" abbrev="TBRSensor" source="vehicle,ccu" category="Sensors">
+    <description>
+      TBR700RT internal sensor reading
+    </description>
+    <field name="TBR serial number" abbrev="serial_no" type="uint32_t">
+      <description>
+        Serial number of the TBR receiver
+      </description>
+    </field>
+    <field name="UNIX Timestamp" abbrev="unix_timestamp" type="uint32_t">
+      <description>
+        Time of sensor reading as UNIX timestamp 
+      </description>
+    </field>
+    <field name="Temperature" abbrev="temperature" type="fp32_t" unit="°C"/>
+    <field name="Average noise level" abbrev="avg_noise_level" type="uint8_t"/>
+    <field name="Peak noise level," abbrev="peak_noise_level" type="uint8_t"/>
+    <field name="Receiver listening frequency" abbrev="recv_listen_freq" type="uint8_t"/>
+    <field name="Receiver Memory Address" abbrev="recv_mem_addr" type="uint16_t">
+      <description>
+        Receiver Memory Address (running entry number in flash memory)
+      </description>
+    </field>
+  </message>
+
+  <message id="2009" name="Iridium State Reports" abbrev="IridiumReport" source="vehicle,ccu" category="Networking">
+    <description>
+      Frequency of Iridium State Reports.
+    </description>
+    <field name="Frequency" abbrev="frequency" type="uint32_t" unit="s">
+      <description>
+        Frequency in seconds of State Reports.
+      </description>
+    </field>
+    <field name="Information" abbrev="info" type="plaintext" unit="TupleList">
+      <description>
+        Information included in State Reports.
+        Default: UTC time, location, battery, cog, sog, gps satellites, produced power, consumed power, vehicle status, relays settings.
+      </description>
     </field>
   </message>
 
@@ -11256,5 +11649,483 @@
       <description>Textual description for why this restriction is needed.</description>
     </field>
   </message>
+
+  <message id="2011" name="L3 Scientific Sensors" abbrev="ScienceSensors" source="vehicle,ccu" category="Sensors">
+    <description>
+      Activation/deactivation of scientific sensors.
+    </description>
+    <field name="ADCP" abbrev="adcp" type="int8_t">
+      <description>
+        ADCP: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="ADCP duration" abbrev="adcp_dur" type="uint32_t" unit="s">
+      <description>
+        ADCP sampling duration.
+        adcp_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="ADCP activation frequency" abbrev="adcp_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+    <field name="CTD" abbrev="ctd" type="int8_t">
+      <description>
+        CTD: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="CTD duration" abbrev="ctd_dur" type="uint32_t" unit="s">
+      <description>
+        CTD sampling duration.
+        ctd_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="CTD activation frequency" abbrev="ctd_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+    <field name="OPTODE" abbrev="opt" type="int8_t">
+      <description>
+        OPTODE: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="OPTODE duration" abbrev="opt_dur" type="uint32_t" unit="s">
+      <description>
+        OPTODE sampling duration.
+        opt_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="OPTODE activation frequency" abbrev="opt_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+    <field name="TBLive" abbrev="tbl" type="int8_t">
+      <description>
+        TBLive: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="TBLive duration" abbrev="tbl_dur" type="uint32_t" unit="s">
+      <description>
+        TBLive sampling duration.
+        tbl_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="TBLive activation frequency" abbrev="tbl_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+    <field name="EcoPuck" abbrev="eco" type="int8_t">
+      <description>
+        EcoPuck: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="EcoPuck duration" abbrev="eco_dur" type="uint32_t" unit="s">
+      <description>
+        EcoPuck sampling duration.
+        eco_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="EcoPuck activation frequency" abbrev="eco_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+    <field name="EcoPAR" abbrev="par" type="int8_t">
+      <description>
+        EcoPAR: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="EcoPAR duration" abbrev="par_dur" type="uint32_t" unit="s">
+      <description>
+        EcoPAR sampling duration.
+        eco_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="EcoPAR activation frequency" abbrev="par_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+  </message>
+
+  <message id="2012" name="Reply L3 Scientific Sensors" abbrev="ScienceSensorsReply" source="vehicle,ccu" category="Sensors">
+    <description>
+      Activation/deactivation of scientific sensors.
+    </description>
+    <field name="ADCP" abbrev="adcp" type="int8_t">
+      <description>
+        ADCP: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="ADCP duration" abbrev="adcp_dur" type="uint32_t" unit="s">
+      <description>
+        ADCP sampling duration.
+        adcp_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="ADCP activation frequency" abbrev="adcp_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+    <field name="CTD" abbrev="ctd" type="int8_t">
+      <description>
+        CTD: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="CTD duration" abbrev="ctd_dur" type="uint32_t" unit="s">
+      <description>
+        CTD sampling duration.
+        ctd_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="CTD activation frequency" abbrev="ctd_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+    <field name="OPTODE" abbrev="opt" type="int8_t">
+      <description>
+        OPTODE: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="OPTODE duration" abbrev="opt_dur" type="uint32_t" unit="s">
+      <description>
+        OPTODE sampling duration.
+        opt_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="OPTODE activation frequency" abbrev="opt_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+    <field name="TBLive" abbrev="tbl" type="int8_t">
+      <description>
+        TBLive: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="TBLive duration" abbrev="tbl_dur" type="uint32_t" unit="s">
+      <description>
+        TBLive sampling duration.
+        tbl_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="TBLive activation frequency" abbrev="tbl_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+    <field name="EcoPuck" abbrev="eco" type="int8_t">
+      <description>
+        EcoPuck: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="EcoPuck duration" abbrev="eco_dur" type="uint32_t" unit="s">
+      <description>
+        EcoPuck sampling duration.
+        eco_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="EcoPuck activation frequency" abbrev="eco_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>
+    <field name="EcoPAR" abbrev="par" type="int8_t">
+      <description>
+        EcoPAR: 0=ON, 1=OFF, 2=REBOOT, 3=NO_CHANGE.
+      </description>
+    </field>
+    <field name="EcoPAR duration" abbrev="par_dur" type="uint32_t" unit="s">
+      <description>
+        EcoPAR sampling duration.
+        eco_dur = 0: sensor always on.
+      </description>
+    </field>
+    <field name="EcoPAR activation frequency" abbrev="par_fr" type="uint32_t" unit="s">
+      <description>
+        Enables periodical sampling at specified frequency (s).
+      </description>
+    </field>    
+  </message>
+
+  <message id="2013" name="Photosynthetically Active Radiation" abbrev="PAR" source="vehicle" flags="periodic">
+    <description>
+      Photosynthetically Active Radiation (PAR) measurement.
+    </description>
+    <field name="Value" abbrev="value" type="fp32_t" unit="par">
+      <description>
+        PAR reading.
+        PAR is measured in µmol photons/m^2/s.
+      </description>
+    </field>
+  </message>
+
+  <message id="2014" name="Single Current Cell" abbrev="SingleCurrentCell" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Underwater current Velocity and Direction at chosen depth.
+    </description>
+    <field name="Latitude WGS-84" abbrev="lat" type="fp64_t" unit="rad" min="-1.5707963267948966" max="1.5707963267948966">
+      <description>
+        WGS-84 Latitude coordinate.
+      </description>
+    </field>
+    <field name="Longitude WGS-84" abbrev="lon" type="fp64_t" unit="rad" min="-3.141592653589793" max="3.141592653589793">
+      <description>
+        WGS-84 Longitude coordinate.
+      </description>
+    </field>
+    <field name="Cell Depth" abbrev="depth" type="plaintext">
+      <description>
+        Depth [m] of the measured current cell.
+      </description>
+    </field>
+    <field name="Water Velocity" abbrev="vel" type="plaintext">
+      <description>
+        Velocity [m/s] of underwater current measured in the chosen coordinate system.
+      </description>
+    </field>
+    <field name="Direction" abbrev="dir" type="plaintext">
+      <description>
+        Direction [degrees] of underwater current measured in the chosen reference frame.
+      </description>
+    </field>
+  </message>
+
+  <message id="2015" name="Gamma Gain Scheduling" abbrev="Gamma" source="vehicle" flags="periodic" category="Navigation">
+    <description>
+      Gamma expressing nonlinearity for gain-scheduling.
+    </description>
+    <field name="Source" abbrev="source" type="plaintext">
+      <description>
+        Indicate what is used to compute gamma: ADCP or SOG.
+      </description>
+    </field>
+    <field name="Latitude WGS-84" abbrev="lat" type="fp64_t" unit="rad" min="-1.5707963267948966" max="1.5707963267948966">
+      <description>
+        WGS-84 Latitude coordinate.
+      </description>
+    </field>
+    <field name="Longitude WGS-84" abbrev="lon" type="fp64_t" unit="rad" min="-3.141592653589793" max="3.141592653589793">
+      <description>
+        WGS-84 Longitude coordinate.
+      </description>
+    </field>
+    <field name="Ground Speed" abbrev="sog" type="fp32_t" unit="m/s">
+      <description>
+        Vessel speed over ground.
+      </description>
+    </field>
+    <field name="Current Longitudinal Speed" abbrev="uc" type="fp32_t" unit="m/s">
+      <description>
+        Longitudinal current speed in body frame (u_c_body).
+      </description>
+    </field>
+    <field name="Cell Depth" abbrev="depth" type="fp32_t" unit="m">
+      <description>
+        Depth at which u_c_ned is retrieved.
+      </description>
+    </field>
+    <field name="Value" abbrev="value" type="fp32_t">
+      <description>
+        Gamma value.
+      </description>
+    </field>
+  </message>
+
+  <message id="1310" name="Imu" abbrev="Imu" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      A measurement from an IMU, containing acceleration and angular velocity.
+    </description>
+    <field name="Acceleration" abbrev="acceleration" type="message" message-type="Acceleration">
+    <description>
+        IMC::Acceleration.
+      </description>
+    </field>
+    <field name="AngularVelocity" abbrev="angular_velocity" type="message" message-type="AngularVelocity">
+    <description>
+        IMC::AngularVelocity.
+      </description>
+    </field>
+    <field name="Temperature" abbrev="temperature" type="message" message-type="Temperature">
+    <description>
+        IMC::Temperature.
+      </description>
+    </field>
+  </message>
+
+    <!-- U-blox GNSS messages -->
+  <message id="1311" name="u-blox DOP" abbrev="UbxDOP" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Dilution of precision message from uBlox receiver (UBX-NAV-DOP).
+    </description>
+    <field name="Geometric DOP" abbrev="gDOP" type="fp32_t"/>
+    <field name="Position DOP" abbrev="pDOP" type="fp32_t"/>
+    <field name="Time DOP" abbrev="tDOP" type="fp32_t"/>
+    <field name="Vertical DOP" abbrev="vDOP" type="fp32_t"/>
+    <field name="Horizontal DOP" abbrev="hDOP" type="fp32_t"/>
+    <field name="North DOP" abbrev="nDOP" type="fp32_t"/>
+    <field name="East DOP" abbrev="eDOP" type="fp32_t"/>
+  </message>
+
+  <message id="1312" name="u-blox survey-in data" abbrev="UbxSvIn" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Survey-in data message from uBlox receiver (UBX-NAV-SVIN).
+    </description>
+    <field name="Current mean ECEF X coordinate" abbrev="meanX" type="fp64_t" unit="m"/>
+    <field name="Current mean ECEF Y coordinate" abbrev="meanY" type="fp64_t" unit="m"/>
+    <field name="Current mean ECEF Z coordinate" abbrev="meanZ" type="fp64_t" unit="m"/>
+    <field name="Passed observation time" abbrev="dur" type="uint32_t" unit="s"/>
+    <field name="Mean accuracy" abbrev="meanAcc" type="fp32_t" unit="m"/>
+    <field name="Observations used" abbrev="obs" type="uint32_t"/>
+    <field name="Survey-in position validity" abbrev="valid" type="uint8_t" unit="Enumerated" enum-def="Boolean"/>
+    <field name="Survey-in active" abbrev="active" type="uint8_t" unit="Enumerated" enum-def="Boolean"/>
+  </message>
+
+  <message id="1313" name="u-blox navigation status" abbrev="UbxStatus" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Navigation status message from uBlox receiver (UBX-NAV-STATUS).
+    </description>
+    <field name="Gps Fix Type" abbrev="gpsFixType" type="uint8_t" unit="Enumerated" prefix="GPSFIXTYPE">
+      <value id="0" abbrev="NO_FIX"  name="No GPS fix"/>
+      <value id="1" abbrev="DR_ONLY"  name="Dead reckoning only"/>
+      <value id="2" abbrev="FIX_2D"  name="Position fix 2D"/>
+      <value id="3" abbrev="FIX_3D"  name="Position fix 3D"/>
+      <value id="4" abbrev="GPS_DR_COMBINED"  name="GPS and dead reckoning combined"/>
+      <value id="5" abbrev="TIME_ONLY"  name="Time only fix"/>
+    </field>
+    <field name="Navigation Status Flags" abbrev="flags" type="uint8_t" unit="Bitfield" prefix="NAV_STATUS">
+      <value id="0x01" abbrev="GPS_FIX_OK"  name="Position and velocity valid and within DOP and accuracy masks"/>
+      <value id="0x02" abbrev="DIFF_SOLN"  name="Differential corrections applied"/>
+      <value id="0x04" abbrev="WKN_SET"  name="Week number set"/>
+      <value id="0x08" abbrev="TOW_SET"  name="Time of week set"/>
+    </field>
+    <field name="Differential corrections available" abbrev="diffCorr" type="uint8_t" unit="Enumerated" enum-def="Boolean"/>
+  </message>
+
+  <message id="1314" name="u-blox single GNSS signal info" abbrev="gnssSignal" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Information from uBlox receiver about a single GNSS signal.
+    </description>
+    <field name="GNSS identifier" abbrev="gnssId" type="uint8_t"/>
+    <field name="Satellite identifier" abbrev="svId" type="uint8_t"/>
+    <field name="Signal identifier" abbrev="sigId" type="uint8_t"/>
+    <field name="Frequency identifier" abbrev="freqId" type="uint8_t"/>
+    <field name="Pseudorange residual" abbrev="prRes" type="fp32_t" unit="m"/>
+    <field name="Carrier-to-noise density ratio" abbrev="cno" type="uint8_t" unit="dBHz"/>
+    <field name="Signal Quality Indicator" abbrev="qualityInd" type="uint8_t" unit="Enumerated" prefix="SIG">
+      <value id="0" abbrev="NO_SIG"  name="No signal"/>
+      <value id="1" abbrev="SEARCHING"  name="Searching signal"/>
+      <value id="2" abbrev="AQUIRED"  name="Signal aquired"/>
+      <value id="3" abbrev="DETECTED"  name="Signal detected but unusable"/>
+      <value id="4" abbrev="CODE_LOCK"  name="Code locked and time synchronized"/>
+      <value id="5" abbrev="CODE_CARRIER_LOCK5"  name="Code and carrier locked and time synchronized (5)"/>
+      <value id="6" abbrev="CODE_CARRIER_LOCK6"  name="Code and carrier locked and time synchronized (6)"/>
+      <value id="7" abbrev="CODE_CARRIER_LOCK7"  name="Code and carrier locked and time synchronized (7)"/>
+    </field>
+    <field name="Correction Source" abbrev="corrSource" type="uint8_t" unit="Enumerated" prefix="CORR">
+      <value id="0" abbrev="NONE"  name="No corrections"/>
+      <value id="1" abbrev="SBAS"  name="SBAS corrections"/>
+      <value id="2" abbrev="BEIDOU"  name="BeiDou corrections"/>
+      <value id="3" abbrev="RTCM2"  name="RTCM2 corrections"/>
+      <value id="4" abbrev="RTCM3_OSR"  name="RTCM3 OSR corrections"/>
+      <value id="5" abbrev="RTCM3_SSR"  name="RTCM2 SSR corrections"/>
+      <value id="6" abbrev="QZSS_SLAS"  name="QZSS SLAS corrections"/>
+    </field>
+    <field name="Ionospheric Model Used" abbrev="ionoModel" type="uint8_t" unit="Enumerated" prefix="IONOMODEL">
+      <value id="0" abbrev="NONE"  name="No model"/>
+      <value id="1" abbrev="KLOBUCHAR_GPS"  name="Klobuchar model transmitted by GPS"/>
+      <value id="2" abbrev="SBAS"  name="SBAS model"/>
+      <value id="3" abbrev="KLOBUCHAR_BEIDOU"  name="Klobuchar model transmitted by BeiDou"/>
+      <value id="8" abbrev="DUAL_FREQ"  name="Iono delay derived from dual frequency observations"/>
+    </field>
+    <field name="Signal Health" abbrev="health" type="uint8_t" unit="Enumerated" prefix="HEALTH">
+      <value id="0" abbrev="UNKNOWN"  name="Unknown health"/>
+      <value id="1" abbrev="HEALTHY"  name="Signal healthy"/>
+      <value id="2" abbrev="UNHEALTHY"  name="Signal unhealthy"/>
+    </field>
+    <field name="Signal Flags" abbrev="sigFlags" type="uint8_t" unit="Bitfield" prefix="SIGFLAG">
+      <value id="0x01" abbrev="PR_SMOOTHED"  name="Pseudorange has been smoothed"/>
+      <value id="0x02" abbrev="PR_USED"  name="Pseudorange has been used"/>
+      <value id="0x04" abbrev="CR_USED"  name="Carrier has been used"/>
+      <value id="0x08" abbrev="DO_USED"  name="Doppler has been used"/>
+      <value id="0x10" abbrev="PR_CORR_USED"  name="Pseudorange corrections used"/>
+      <value id="0x20" abbrev="CR_CORR_USED"  name="Carrier corrections used"/>
+      <value id="0x40" abbrev="DO_CORR_USED"  name="Doppler corrections used"/>
+    </field>
+  </message>
+
+  <message id="1315" name="u-blox signal information" abbrev="UbxSig" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Signal information message from uBlox receiver (UBX-NAV-SIG).
+    </description>
+    <field name="Number of signals" abbrev="numSigs" type="uint8_t"/>
+    <field name="Signals" abbrev="sigs" type="message-list" message-type="gnssSignal"/>
+  </message>
+
+  <message id="1316" name="u-blox single GNSS satellite info" abbrev="gnssSatellite" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Information from uBlox receiver about a single GNSS satellite.
+    </description>
+    <field name="GNSS identifier" abbrev="gnssId" type="uint8_t"/>
+    <field name="Satellite identifier" abbrev="svId" type="uint8_t"/>
+    <field name="Elevation" abbrev="elev" type="fp32_t" unit="rad"/>
+    <field name="Azimuth" abbrev="azim" type="fp32_t" unit="rad"/>
+  </message>
+
+
+  <message id="1317" name="u-blox satellite information" abbrev="UbxSat" source="vehicle" flags="periodic" category="Sensors">
+    <description>
+      Satellite information message from uBlox receiver (UBX-NAV-SAT).
+    </description>
+    <field name="Number of satellites" abbrev="numSvs" type="uint8_t"/>
+    <field name="Satellites" abbrev="svs" type="message-list" message-type="gnssSatellite"/>
+  </message>
+
+  <message id="1318" name="u-blox relative position in NED" abbrev="UbxRelPosNED" source="vehicle" flags="periodic" category="Sensors">
+    <field name="Reference station Id" abbrev="refStationId" type="uint16_t"/>
+    <field name="GPS time of week" abbrev="iTow" type="uint32_t" unit="ms"/>
+    <field name="North component of relative position vector" abbrev="relPosN" type="fp64_t" unit="m"/>
+    <field name="East component of relative position vector" abbrev="relPosE" type="fp64_t" unit="m"/>
+    <field name="Down component of relative position vector" abbrev="relPosD" type="fp64_t" unit="m"/>
+    <field name="Length of the relative position vector" abbrev="relPosLength" type="fp64_t" unit="m"/>
+    <field name="Heading of the relative position vector" abbrev="relPosHeading" type="fp32_t" unit="rad"/>
+    <field name="Accuracy of relative position North component" abbrev="accN" type="fp32_t" unit="m"/>
+    <field name="Accuracy of relative position East component" abbrev="accE" type="fp32_t" unit="m"/>
+    <field name="Accuracy of relative position Down component" abbrev="accD" type="fp32_t" unit="m"/>
+    <field name="Accuracy of length of the relative position vector" abbrev="accLength" type="fp32_t" unit="m"/>
+    <field name="Accuracy of heading of the relative position vector" abbrev="accHeading" type="fp32_t" unit="rad"/>
+    <field name="Fix valid within DOP and accuracy masks" abbrev="gnssFixOk" type="uint8_t" unit="Enumerated" enum-def="Boolean"/>
+    <field name="Differential corrections applied" abbrev="diffSoln" type="uint8_t" unit="Enumerated" enum-def="Boolean"/>
+    <field name="Relative position and accuracy valid" abbrev="relPosValid" type="uint8_t" unit="Enumerated" enum-def="Boolean"/>
+    <field name="Moving baseline mode" abbrev="isMoving" type="uint8_t" unit="Enumerated" enum-def="Boolean"/>
+    <field name="Extrapolated reference position used" abbrev="refPosMiss" type="uint8_t" unit="Enumerated" enum-def="Boolean"/>
+    <field name="Extrapolated reference observations used" abbrev="refObsMiss" type="uint8_t" unit="Enumerated" enum-def="Boolean"/>
+    <field name="RelPosHeading is valid" abbrev="relPosHeadingValid" type="uint8_t" unit="Enumerated" enum-def="Boolean"/>
+    <field name="Carrier Phase Range Solution Status" abbrev="carrSoln" type="uint8_t" unit="Enumerated" prefix="CARR_PHASE">
+      <value id="0" abbrev="NONE"  name="No carrier phase range solution"/>
+      <value id="1" abbrev="FLOAT"  name="Carrier phase range solution with floating ambiguities"/>
+      <value id="2" abbrev="FIX"  name="Carrier phase range solution with fixed ambiguities"/>
+    </field>
+  </message>
+  
+  <message id="1000" name="Dynamic Obstacles Vector" abbrev="DynObsVec" source="ccu" category="Maneuvering">
+   <description>
+    Vector of dynamic obstacles to be used in collision avoidance algorithms.
+   </description>
+   <field name="Obstacle List" abbrev="obstacles" type="message-list" message-type="CollisionAvoidance">
+   <description>
+    List of CollisionAvoidance messages.
+   </description>
+   </field>
+  </message>
+
+
+
 
 </messages>
