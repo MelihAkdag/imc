@@ -12124,6 +12124,32 @@
    </description>
    </field>
   </message>
+  
+  <message id="1010" name="Negotiation data" abbrev="NegotiationData" source="vehicle">
+    <description>
+      Send intentions (intended course, speed, and negotiation state) for negotitaion protocol.
+    </description>
+    <field name="MMSI" abbrev="mmsi" type="plaintext">
+      <description>
+        Ownship ID.
+      </description>
+    </field>
+    <field name="Intended Course" abbrev="cog_int" type="fp32_t" unit="°">
+      <description>
+        Intended COG in degrees.
+      </description>
+    </field>
+    <field name="Intended Speed" abbrev="sog_int" type="fp32_t" unit="m/s">
+      <description>
+        Intended SOG in m/s.
+      </description>
+    </field>
+    <field name="Negotiation state" abbrev="state" type="plaintext">
+      <description>
+        Negotiation state (0 = Continues searching new actions, 1 = Quiescene (intentions are stable))
+      </description>
+    </field>
+  </message>
 
 
 
